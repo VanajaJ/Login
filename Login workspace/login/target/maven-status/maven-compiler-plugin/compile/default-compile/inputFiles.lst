@@ -1,0 +1,10 @@
+D:\Login workspace\login\src\main\java\com\example\login\model\Users.java
+D:\Login workspace\login\src\main\java\com\example\login\service\impl\OtpServiceImpl.java
+D:\Login workspace\login\src\main\java\com\example\login\service\TwilioOTPService.java
+D:\Login workspace\login\src\main\java\com\example\login\LoginApplication.java
+D:\Login workspace\login\src\main\java\com\example\login\security\SecurityConfig.java
+D:\Login workspace\login\src\main\java\com\example\login\controller\LoginController.java
+D:\Login workspace\login\src\main\java\com\example\login\security\CorsConfig.java
+D:\Login workspace\login\src\main\java\com\example\login\service\EmailService.java
+D:\Login workspace\login\src\main\java\com\example\login\service\OtpService.java
+D:\Login workspace\login\src\main\java\com\example\login\repo\OtpRepo.java
