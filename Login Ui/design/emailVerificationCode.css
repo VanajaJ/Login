@@ -1,0 +1,32 @@
+* {
+    font-family: "Berkshire Swash";
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.form-container .login-container {
+    box-shadow: 0 2px 6px 0 rgba(218, 218, 253, 0.65), 0 2px 6px 0 rgba(206, 206, 238, 0.54);
+    margin-top: 2%;
+    width: 100%; /* Adjust the width as needed */
+    max-width: 600px; /* Set a maximum width for the container */
+    margin-left: auto;
+    margin-right: auto; /* Center the container */
+    padding: 20px;
+    background-color: white;
+}
+
+.form-floating .btn {
+    width: 100%;
+    margin-top: 19px;
+}
+
+.form-control:hover {
+    border: 2px solid #8252fa;
+    box-shadow: none;
+}
+
+.form-control:active {
+    border: 2px solid #0d6efd;
+    box-shadow: none;
+}

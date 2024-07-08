@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">   
+    <link rel="stylesheet" href="/design/register.css" type="text/css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
+    
+    <title>Registration Page</title>
+</head>
+<body>
+    <section><br>
+        <div class="container-fluid form-container col-md-5">
+            <div class="container login-container" style="background-color: white;">
+                <div class="row">
+                    <div class="col-lg-8 col-md-11 formcol mx-auto">
+                        <div style="margin-top: 50px;">
+                            <h3>Register Form</h3>
+                        </div>
+                        <form id="verificationForm">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="firstName" placeholder="Enter Your Name" required>
+                                <label for="firstName">*User Name</label>
+                                <div class="invalid-feedback">Please enter your name.</div>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="email" class="form-control" id="email" placeholder="Enter Email Address" required>
+                                <label for="email">*Email address</label>
+                                <div class="invalid-feedback">Please enter a valid email address.</div>
+                            </div>
+                            <div class="form-floating eye-icon-container">
+                                <input type="password" class="form-control" id="password" placeholder="Enter Your Password" required minlength="6">
+                                <label for="password">*Password</label>
+                                <i class="fa-solid fa-eye" id="eyepassword" onclick="togglePasswordVisibility()"></i>
+                                <div class="invalid-feedback">Password must be at least 6 characters long.</div>
+                            </div> <br> 
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="phoneNumber" placeholder="Enter Your phone number" required>
+                                <label for="phoneNumber">*Phone Number</label>
+                                <div class="invalid-feedback">Please enter a valid phone number.</div>                                
+                            </div>
+                            <div id="recaptcha-container"></div>                                   
+                            <div class="form-floating">
+                                <button type="button" class="btn btn-primary" onclick="register()">Register</button>
+                            </div><br>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </section>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCQf3XiTy6wD8eR3HKCkAKN1j128oKl2u0",
+            authDomain: "login-12c3c.firebaseapp.com",
+            projectId: "login-12c3c",
+            storageBucket: "login-12c3c.appspot.com",
+            messagingSenderId: "899227587332",
+            appId: "1:899227587332:web:d5c6fecdbec3d19e48f651",
+            measurementId: "G-F2WFQB3CCE"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        function render() {
+            window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {}, auth);
+            recaptchaVerifier.render();
+        }
+
+        render();
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function isPhoneNumberValid(phoneNumber) {
+            const phoneRegex = /^\+[1-9]\d{1,14}$/;
+            return phoneRegex.test(phoneNumber);
+        }
+
+        async function sendPhoneOtpWithRetry(phoneNumber, appVerifier, retries = 3, delayMs = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+                    window.confirmationResult = confirmationResult;
+                    alert('OTP sent to phone');
+                    return;
+                } catch (error) {
+                    console.error(`Error during signInWithPhoneNumber: ${error.code} - ${error.message}`);
+                    if (error.code === 'auth/too-many-requests' || error.code === 'auth/quota-exceeded') {
+                        if (i < retries - 1) {
+                            await delay(delayMs);
+                            delayMs *= 2; // Exponential backoff
+                        } else {
+                            alert('Error sending OTP to phone. Please try again later.');
+                        }
+                    } else {
+                        alert(`Error: ${error.message}`);
+                        return;
+                    }
+                }
+            }
+        }
+
+        window.register = function() {
+            const firstName = document.getElementById('firstName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+
+            if (!isPhoneNumberValid(phoneNumber)) {
+                alert('Invalid phone number format. Please enter in E.164 format (e.g., +1234567890).');
+                return;
+            }
+
+            const appVerifier = window.recaptchaVerifier;
+            sendPhoneOtpWithRetry(phoneNumber, appVerifier);
+
+            fetch('http://localhost:8080/api/send-email-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: email, phoneNumber: phoneNumber })
+            }).then(response => {
+                if (response.ok) {
+                    alert('OTP sent to email');
+                } else {
+                    alert('Error sending OTP to email');
+                }
+            }).then(data => {
+                // Handle response data
+                console.log("Success:", data);
+
+                // Navigate to another page
+                window.location.href = "/html/otp.html"; // Change the URL to your desired page
+            }).catch(error => {
+                console.error("Error during sending email OTP", error);
+            });
+        }
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.querySelector("#password");
+            const eyeIcon = document.querySelector("#eyepassword");
+
+            const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+            passwordInput.setAttribute("type", type);
+
+            // Toggle eye icon class for open and closed eyes
+            eyeIcon.classList.toggle("fa-eye");
+            eyeIcon.classList.toggle("fa-eye-slash");
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+<!--<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">   <!-- css tag lib-->
+    <!--<link rel="stylesheet" href="/design/emailVerification.css" type="text/css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">-->
+
+    <!-- Bootstrap JS and dependencies (Make sure to include jQuery and Popper.js) -->
+   <!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <title>Registration Page</title>
+</head>
+<body>
+    <section><br>
+        <div class="container-fluid form-container col-md-5">
+            <div class="container login-container" style="background-color: white;">
+                <div class="row">
+                    <div class="col-lg-8 col-md-11 formcol mx-auto">
+                        <div style="margin-top: 50px;">
+                            <h3>Register Form</h3>
+                        </div>
+                        <form id="verificationForm">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="firstName" placeholder="Enter Your Name" required>
+                                <label for="firstName">*User Name</label>
+                                <div class="invalid-feedback">Please enter your name.</div>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="email" class="form-control" id="email" placeholder="Enter Email Address" required>
+                                <label for="email">*Email address</label>
+                                <div class="invalid-feedback">Please enter a valid email address.</div>
+                            </div>
+                            <div class="form-floating eye-icon-container">
+                                <input type="password" class="form-control" id="password" placeholder="Enter Your Password" required minlength="6">
+                                <label for="password">*Password</label>
+                                <i class="fa-solid fa-eye" id="eyepassword" onclick="togglePasswordVisibility()"></i>
+                                <div class="invalid-feedback">Password must be at least 6 characters long.</div>
+                            </div> <br> 
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="phoneNumber" placeholder="Enter Your phone number" required>
+                                <label for="phoneNumber">*Phone Number</label>
+                                <div class="invalid-feedback">Please enter a valid phone number.</div>                                
+                            </div>  
+                            <div id="recaptcha-container"></div>                                 
+                            <div class="form-floating">
+                                <button class="btn btn-primary" id="register" onclick="register()">Register</button>
+                            </div><br>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </section>
+    
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+    
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyAIvV1RtRhKoFv6S0pSqOqVMnJTFvSK9NY",
+          authDomain: "login-b8fc9.firebaseapp.com",
+          projectId: "login-b8fc9",
+          storageBucket: "login-b8fc9.appspot.com",
+          messagingSenderId: "1027765078296",
+          appId: "1:1027765078296:web:21ec9998f920cf6ca6766d",
+          measurementId: "G-ZVBJMNW5M0"
+        };
+    
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+    
+        // Setup reCAPTCHA verifier
+        function render() {
+          window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {}, auth);
+          recaptchaVerifier.render();
+        }
+    
+        render();
+    
+        // Define functions and add them to the global scope
+        window.register = function() {
+            const firstName = document.getElementById('firstName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+    
+          // Send OTP to phone
+            const appVerifier = window.recaptchaVerifier;
+            signInWithPhoneNumber(auth, phoneNumber, appVerifier)
+                .then(confirmationResult => {
+                window.confirmationResult = confirmationResult;
+                alert('OTP sent to phone');
+                }).catch(error => {
+                console.error("Error during signInWithPhoneNumber", error);
+                });
+    
+            // Send OTP to email using backend service
+            fetch('http://localhost:8080/api/send-email-otp', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ firstName :firstName }, { email: email }, { password :password } , { phoneNumber: phoneNumber },)
+            }).then(response => {
+                if (response.ok) {
+                alert('OTP sent to email');
+                } else {
+                alert('Error sending OTP to email');
+                }
+            }).catch(error => {
+            console.error("Error during sending email OTP", error);
+            });
+        }
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.querySelector("#password");
+            const eyeIcon = document.querySelector("#eyepassword");
+
+            const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+            passwordInput.setAttribute("type", type);
+
+            // Toggle eye icon class for open and closed eyes
+            eyeIcon.classList.toggle("fa-eye");
+            eyeIcon.classList.toggle("fa-eye-slash");
+        }
+
+    </script>
+</body>
+</html>-->
