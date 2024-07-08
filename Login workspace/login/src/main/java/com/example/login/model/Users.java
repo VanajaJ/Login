@@ -1,14 +1,9 @@
 package com.example.login.model;
 
 import jakarta.persistence.*;
-import lombok.*;
 
-
-@Getter
-@Setter
-@Builder
 @Entity
-@Table(name = "USERS")
+@Table(name = "userss")
 public class Users {
 
     @Id
@@ -38,6 +33,12 @@ public class Users {
     
     @Column
     private boolean verified;
+    
+    @Column
+    private boolean isEmailVerified;
+    
+    @Column
+    private boolean isPhoneVerified;
 
 	public Long getUserId() {
 		return userId;
@@ -74,7 +75,7 @@ public class Users {
 	public String getCountryCode() {
         return countryCode;
     }
-	
+
 	public String getPhoneNumber() {
         return phoneNumber;
     }
@@ -94,6 +95,31 @@ public class Users {
 	public void setOtp(String otp) {
 		this.otp = otp;
 	}
+	
+
+	public String getSms() {
+		return sms;
+	}
+
+	public boolean isEmailVerified() {
+		return isEmailVerified;
+	}
+
+	public void setEmailVerified(boolean isEmailVerified) {
+		this.isEmailVerified = isEmailVerified;
+	}
+
+	public boolean isPhoneVerified() {
+		return isPhoneVerified;
+	}
+
+	public void setPhoneVerified(boolean isPhoneVerified) {
+		this.isPhoneVerified = isPhoneVerified;
+	}
+
+	public void setSms(String sms) {
+		this.sms = sms;
+	}
 
 	public boolean isVerified() {
 		return verified;
@@ -107,7 +133,7 @@ public class Users {
 	}
 
 	public Users(Long userId, String userName, String email, String otp, String password, String countryCode,
-			String phoneNumber, String sms, boolean verified) {
+			String phoneNumber, String sms, boolean verified, boolean isEmailVerified, boolean isPhoneVerified) {
 		super();
 		this.userId = userId;
 		this.userName = userName;
@@ -118,5 +144,16 @@ public class Users {
 		this.phoneNumber = phoneNumber;
 		this.sms = sms;
 		this.verified = verified;
+		this.isEmailVerified = isEmailVerified;
+		this.isPhoneVerified = isPhoneVerified;
 	}
+
+	public Users(String email, String otp, String phoneNumber, String sms) {
+		// TODO Auto-generated constructor stub
+		this.email = email;
+		this.otp = otp;
+		this.phoneNumber = phoneNumber;
+		this.sms = sms;
+	}
+	
 }

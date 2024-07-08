@@ -9,5 +9,5 @@ import com.example.login.model.Users;
 public interface OtpRepo extends JpaRepository<Users, Long>{
 	
 	Users findByEmail(String email);
-
+	
 }

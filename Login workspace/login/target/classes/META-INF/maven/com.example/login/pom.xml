@@ -67,10 +67,6 @@
 	        <groupId>org.springframework.boot</groupId>
 	        <artifactId>spring-boot-starter-mail</artifactId>
 	    </dependency>
-	    <!--<dependency>
-	        <groupId>org.springframework.boot</groupId>
-	        <artifactId>spring-boot-starter-security</artifactId>
-	    </dependency>-->
 		<dependency>
 		    <groupId>com.sun.mail</groupId>
 		    <artifactId>jakarta.mail</artifactId>
@@ -80,17 +76,38 @@
 		    <groupId>com.twilio.sdk</groupId>
 		    <artifactId>twilio</artifactId>
 		    <version>8.17.0</version> <!-- Replace with the latest version -->
-		</dependency>	
+		</dependency>
 		<dependency>
-		    <groupId>com.google.firebase</groupId>
-		    <artifactId>firebase-admin</artifactId>
-		    <version>8.1.0</version> <!-- Replace with the latest version -->
+		    <groupId>com.googlecode.libphonenumber</groupId>
+		    <artifactId>libphonenumber</artifactId>
+		    <version>8.12.37</version>
 		</dependency>
 		<dependency>
 		    <groupId>javax.mail</groupId>
 		    <artifactId>javax.mail-api</artifactId>
 		    <version>1.6.2</version> <!-- Adjust version as needed -->
 		</dependency>
+		<!-- Firebase Admin SDK -->
+        <dependency>
+            <groupId>com.google.firebase</groupId>
+            <artifactId>firebase-admin</artifactId>
+            <version>8.1.0</version>
+        </dependency>
+        <dependency>
+		    <groupId>com.google.firebase</groupId>
+		    <artifactId>firebase-admin</artifactId>
+		    <version>9.1.1</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-context</artifactId>
+		    <version>6.1.10</version> <!-- Use the appropriate version -->
+		</dependency>
+        <!-- Spring Boot Starter Mail -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
 
 	</dependencies>
 
